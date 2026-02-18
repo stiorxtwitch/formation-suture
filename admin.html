@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Suivi Formation Suture - La Défense Belge</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        h1 {
+            color: #b22222;
+            text-align: center;
+        }
+        .submission {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .submission h3 {
+            margin-top: 0;
+            color: #b22222;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin: 18px 0;
+        }
+        .section strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .quiz-results {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 12px 0;
+        }
+        .no-submissions {
+            text-align: center;
+            font-style: italic;
+            color: #555;
+            padding: 40px;
+        }
+        button {
+            background: #b22222;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #8b1a1a;
+        }
+        .highlight {
+            background: #d4edda;
+            padding: 8px 12px;
+            border-left: 5px solid #28a745;
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Administration - Suivi des Formations Suture</h1>
+    <p>Cette page permet de visualiser les soumissions / résultats des recrues (stockés localement via localStorage).</p>
+    <p>Pour l'instant, pas de formulaire interactif dans le cours suture → affichage de données fictives ou futures soumissions.</p>
+
+    <button onclick="clearSubmissions()">Effacer toutes les données</button>
+
+    <div id="submissionsList" class="no-submissions">
+        Aucune soumission enregistrée pour le moment.<br>
+        (Ajoutez un formulaire de quiz ou feedback dans formation-suture.html pour remplir cette page)
+    </div>
+
+    <script>
+        function renderSubmissions() {
+            const submissions = JSON.parse(localStorage.getItem('sutureSubmissions') || '[]');
+            const list = document.getElementById('submissionsList');
+
+            if (submissions.length === 0) {
+                list.innerHTML = '<p class="no-submissions">Aucune soumission enregistrée pour le moment.<br>Ajoutez un quiz ou un formulaire dans la page principale pour commencer à collecter des données.</p>';
+                return;
+            }
+
+            list.innerHTML = '';
+
+            submissions.forEach((sub, idx) => {
+                const div = document.createElement('div');
+                div.className = 'submission';
+
+                let html = `<h3>Soumission #${idx + 1} — ${new Date(sub.timestamp).toLocaleString('fr-BE')}</h3>`;
+
+                html += '<div class="section"><strong>Recrue :</strong>';
+                html += `<p>Nom : ${sub.data.nom || '(non indiqué)'}</p>`;
+                html += `<p>Prénom : ${sub.data.prenom || '(non indiqué)'}</p></div>`;
+
+                // Section quiz / réponses (exemple si tu ajoutes un quiz)
+                if (sub.data.quiz) {
+                    html += '<div class="section quiz-results"><strong>Résultats du Quiz :</strong>';
+                    Object.entries(sub.data.quiz).forEach(([q, ans]) => {
+                        html += `<p><strong>${q} :</strong> ${ans}</p>`;
+                    });
+                    html += '</div>';
+                }
+
+                // Commentaires ou feedback libre
+                if (sub.data.comments) {
+                    html += '<div class="section"><strong>Commentaires / Auto-évaluation :</strong>';
+                    html += `<p class="highlight">${sub.data.comments.replace(/\n/g, '<br>')}</p>`;
+                    html += '</div>';
+                }
+
+                // Note globale (si ajoutée)
+                if (sub.data.note) {
+                    html += '<div class="section"><strong>Note globale :</strong> ' + sub.data.note + ' / 10</div>';
+                }
+
+                div.innerHTML = html;
+                list.appendChild(div);
+            });
+        }
+
+        function clearSubmissions() {
+            if (confirm('Voulez-vous vraiment effacer toutes les données de formation suture ?')) {
+                localStorage.removeItem('sutureSubmissions');
+                renderSubmissions();
+            }
+        }
+
+        // Chargement initial
+        renderSubmissions();
+    </script>
+
+</body>
+</html>
